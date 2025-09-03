@@ -280,7 +280,7 @@ function App() {
                 className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent transition-all duration-200 ${
                   errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-300'
                 }`}
-                placeholder="(11) 99999-9999"
+                placeholder="(81) 99999-9999"
               />
             </div>
             {errors.phone && (

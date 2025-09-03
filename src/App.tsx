@@ -147,17 +147,17 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-80 mx-auto mb-4">  
             <img src="/assets/unibra-blue.png" alt="UNIBRA Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-700 mb-2">
+          <h1 className="text-2xl font-bold text-azulUnibra-300 mb-2">
             Processo seletivo
           </h1>
-          <p className="text-gray-500 text-sm">
+          <p className="text-azulUnibra-300 text-sm">
             Preencha os dados abaixo para participar
           </p>
         </div>
@@ -187,12 +187,12 @@ function App() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Full Name Field */}
           <div>
-            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="fullName" className="block text-sm font-medium text-azulUnibra-300 mb-2">
               Nome completo
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <User className="h-5 w-5 text-gray-400" />
+                <User className="h-5 w-5 text-azulUnibra-300" />
               </div>
               <input
                 type="text"
@@ -213,12 +213,12 @@ function App() {
 
           {/* Email Field */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="email" className="block text-sm font-medium text-azulUnibra-300 mb-2">
               Email
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
+                <Mail className="h-5 w-5 text-azulUnibra-300" />
               </div>
               <input
                 type="email"
@@ -239,7 +239,7 @@ function App() {
 
           {/* PDF File Upload */}
           <div>
-            <label htmlFor="pdfFile" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="pdfFile" className="block text-sm font-medium text-azulUnibra-300 mb-2">
               Arquivo PDF
             </label>
             <div
@@ -264,23 +264,23 @@ function App() {
               />
               
               <div className="text-center">
-                <Upload className={`mx-auto h-12 w-12 ${dragActive ? 'text-gray-700' : 'text-gray-400'}`} />
+                <Upload className={`mx-auto h-12 w-12 ${dragActive ? 'text-azulUnibra-300' : 'text-gray-400'}`} />
                 <div className="mt-4">
                   {formData.pdfFile ? (
                     <div>
-                      <p className="text-sm font-medium text-gray-700">
+                      <p className="text-sm font-medium text-azulUnibra-300">
                         {formData.pdfFile.name}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-azulUnibra-300">
                         {(formData.pdfFile.size / 1024 / 1024).toFixed(2)} MB
                       </p>
                     </div>
                   ) : (
                     <div>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-azulUnibra-300">
                         <span className="font-medium">Clique para selecionar</span> ou arraste o arquivo aqui
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-azulUnibra-300 mt-1">
                         Apenas arquivos PDF (máx. 10MB)
                       </p>
                     </div>
@@ -297,7 +297,7 @@ function App() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-gray-700 hover:bg-gray-800 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2"
+            className="w-full bg-azulUnibra-300 hover:bg-blue-900 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center space-x-2"
           >
             {isSubmitting ? (
               <>
@@ -315,7 +315,7 @@ function App() {
 
         {/* Footer */}
         <div className="mt-8 text-center">
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-azulUnibra-300">
             Ao enviar este formulário, você concorda com nossos termos de uso.
           </p>
         </div>

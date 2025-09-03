@@ -151,8 +151,8 @@ function App() {
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">  
-            <FileText className="w-8 h-16 text-white" />
+          <div className="w-16 h-16 mx-auto mb-4">  
+            <img src="/assets/unibra-blue.png" alt="UNIBRA Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-gray-700 mb-2">
             Processo seletivo UNIBRA

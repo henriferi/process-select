@@ -2,11 +2,13 @@
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
-    extend: {colors: {
-      azulUnibra: {
-        300: '#192a56'
-      },
-    }},
+    extend: {
+      colors: {
+        azulUnibra: {
+          300: '#192a56'
+        },
+      }
+    },
   },
   plugins: [],
 };

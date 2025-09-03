@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { Upload, User, Mail, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, User, Mail, Phone, Linkedin, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface FormData {
   fullName: string;
   email: string;
+  phone: string;
+  linkedin: string;
   pdfFile: File | null;
 }
 
 interface FormErrors {
   fullName?: string;
   email?: string;
+  phone?: string;
+  linkedin?: string;
   pdfFile?: string;
 }
 
@@ -17,6 +21,8 @@ function App() {
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     email: '',
+    phone: '',
+    linkedin: '',
     pdfFile: null
   });
   
@@ -41,6 +47,21 @@ function App() {
       newErrors.email = 'Email é obrigatório';
     } else if (!emailRegex.test(formData.email)) {
       newErrors.email = 'Email inválido';
+    }
+
+    // Validate phone
+    const phoneRegex = /^[\d\s\(\)\-\+]+$/;
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Telefone é obrigatório';
+    } else if (formData.phone.trim().length < 10) {
+      newErrors.phone = 'Telefone deve ter pelo menos 10 dígitos';
+    } else if (!phoneRegex.test(formData.phone)) {
+      newErrors.phone = 'Formato de telefone inválido';
+    }
+
+    // Validate LinkedIn (optional)
+    if (formData.linkedin.trim() && !formData.linkedin.includes('linkedin.com')) {
+      newErrors.linkedin = 'URL do LinkedIn inválida';
     }
 
     // Validate PDF file
@@ -113,6 +134,8 @@ function App() {
       const formDataToSend = new FormData();
       formDataToSend.append('fullName', formData.fullName);
       formDataToSend.append('email', formData.email);
+      formDataToSend.append('phone', formData.phone);
+      formDataToSend.append('linkedin', formData.linkedin);
       if (formData.pdfFile) {
         formDataToSend.append('pdfFile', formData.pdfFile);
       }
@@ -128,6 +151,8 @@ function App() {
         setFormData({
           fullName: '',
           email: '',
+          phone: '',
+          linkedin: '',
           pdfFile: null
         });
         // Reset file input
@@ -234,6 +259,58 @@ function App() {
             </div>
             {errors.email && (
               <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+            )}
+          </div>
+
+          {/* Phone Field */}
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-azulUnibra-300 mb-2">
+              Telefone
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Phone className="h-5 w-5 text-azulUnibra-300" />
+              </div>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent transition-all duration-200 ${
+                  errors.phone ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+                placeholder="(11) 99999-9999"
+              />
+            </div>
+            {errors.phone && (
+              <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+            )}
+          </div>
+
+          {/* LinkedIn Field */}
+          <div>
+            <label htmlFor="linkedin" className="block text-sm font-medium text-azulUnibra-300 mb-2">
+              LinkedIn <span className="text-gray-400 text-xs">(opcional)</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Linkedin className="h-5 w-5 text-azulUnibra-300" />
+              </div>
+              <input
+                type="url"
+                id="linkedin"
+                name="linkedin"
+                value={formData.linkedin}
+                onChange={handleInputChange}
+                className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent transition-all duration-200 ${
+                  errors.linkedin ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+                placeholder="https://linkedin.com/in/seu-perfil"
+              />
+            </div>
+            {errors.linkedin && (
+              <p className="mt-1 text-sm text-red-600">{errors.linkedin}</p>
             )}
           </div>
 

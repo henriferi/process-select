@@ -117,7 +117,7 @@ function App() {
         formDataToSend.append('pdfFile', formData.pdfFile);
       }
 
-      const response = await fetch('https://n8n.grupounibra.com/webhook/28f98daf-5c5e-4778-8e65-4814a40487bd', {
+      const response = await fetch('https://n8n.grupounibra.com/webhook/ae8584ba-a951-4d37-bd0a-e5a314c5a56d', {
         method: 'POST',
         body: formDataToSend,
       });

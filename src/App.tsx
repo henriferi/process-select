@@ -7,6 +7,7 @@ interface FormData {
   phone: string;
   linkedin: string;
   pdfFile: File | null;
+  descDaVaga: string;
 }
 
 interface FormErrors {
@@ -23,7 +24,8 @@ function App() {
     email: '',
     phone: '',
     linkedin: '',
-    pdfFile: null
+    pdfFile: null,
+    descDaVaga: '',
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
@@ -77,10 +79,9 @@ function App() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
     // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
@@ -136,6 +137,8 @@ function App() {
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('linkedin', formData.linkedin);
+      formDataToSend.append('descDaVaga', formData.descDaVaga);
+
       if (formData.pdfFile) {
         formDataToSend.append('pdfFile', formData.pdfFile);
       }
@@ -153,7 +156,8 @@ function App() {
           email: '',
           phone: '',
           linkedin: '',
-          pdfFile: null
+          pdfFile: null,
+          descDaVaga: ''
         });
         // Reset file input
         const fileInput = document.getElementById('pdfFile') as HTMLInputElement;
@@ -388,6 +392,22 @@ function App() {
               </>
             )}
           </button>
+
+          {/* Descrição da Vaga (temporário para testes) */}
+          <div>
+            <label htmlFor="descDaVaga" className="block text-sm font-medium text-azulUnibra-300 mb-2">
+              Descrição da vaga (teste)
+            </label>
+            <textarea
+              id="descDaVaga"
+              name="descDaVaga"
+              value={formData.descDaVaga}
+              onChange={handleInputChange}
+              className="block w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent transition-all duration-200 border-gray-300"
+              placeholder="Ex: Processo seletivo UNIBRA, vaga para desenvolvedor..."
+              rows={3}
+            />
+          </div>
         </form>
 
         {/* Footer */}

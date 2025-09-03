@@ -151,11 +151,11 @@ function App() {
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4">  
+          <div className="w-80 mx-auto mb-4">  
             <img src="/assets/unibra-blue.png" alt="UNIBRA Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-gray-700 mb-2">
-            Processo seletivo UNIBRA
+            Processo seletivo
           </h1>
           <p className="text-gray-500 text-sm">
             Preencha os dados abaixo para participar

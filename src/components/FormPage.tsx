@@ -160,10 +160,10 @@ export default function FormPage() {
 
       if (formData.pdfFile) formDataToSend.append('pdfFile', formData.pdfFile);
 
-      const response = await fetch(
-        'https://n8n.grupounibra.com/webhook/28f98daf-5c5e-4778-8e65-4814a40487bd',
-        { method: 'POST', body: formDataToSend }
-      );
+      const response = await fetch(`${API_URL}/api/curriculos`, {
+        method: 'POST',
+        body: formDataToSend,
+      });
 
       if (response.ok) {
         setSubmitStatus('success');
@@ -178,7 +178,11 @@ export default function FormPage() {
         });
         const fileInput = document.getElementById('pdfFile') as HTMLInputElement;
         if (fileInput) fileInput.value = '';
-      } else setSubmitStatus('error');
+      } else {
+        const errorText = await response.text();
+        console.error('Erro no backend:', errorText);
+        setSubmitStatus('error');
+      }
     } catch (error) {
       console.error('Erro ao enviar formulário:', error);
       setSubmitStatus('error');
@@ -186,6 +190,7 @@ export default function FormPage() {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
@@ -345,7 +350,7 @@ export default function FormPage() {
             </div>
             {errors.selectedJob && <p className="mt-1 text-sm text-red-600">{errors.selectedJob}</p>}
             {availableJobs.length === 0 && (
-              <p className="mt-1 text-sm text-amber-600">Nenhuma vaga selecionada!</p>
+              <p className="mt-1 text-sm text-amber-600">Nenhuma vaga selecionada! </p>
             )}
           </div>
 

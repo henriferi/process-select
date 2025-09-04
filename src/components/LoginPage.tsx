@@ -68,8 +68,8 @@ export default function LoginPage() {
       
       // For demo purposes, accept any valid credentials
       if (loginData.username && loginData.password.length >= 6) {
-        alert('Login realizado com sucesso!');
-        // Here you would typically redirect to admin dashboard
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
       } else {
         setErrors({ general: 'Credenciais inválidas' });
       }

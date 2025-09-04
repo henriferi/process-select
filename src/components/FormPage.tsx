@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Upload, User, Mail, Phone, Linkedin, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, User, Mail, Phone, Linkedin, FileText, CheckCircle, AlertCircle, Loader2, Briefcase } from 'lucide-react';
 
 interface FormData {
   fullName: string;
   email: string;
   phone: string;
   linkedin: string;
+  selectedJob: string;
   pdfFile: File | null;
 }
 
@@ -14,7 +15,15 @@ interface FormErrors {
   email?: string;
   phone?: string;
   linkedin?: string;
+  selectedJob?: string;
   pdfFile?: string;
+}
+
+interface Job {
+  id: string;
+  title: string;
+  internalDescription: string;
+  createdAt: string;
 }
 
 export default function FormPage() {
@@ -23,6 +32,7 @@ export default function FormPage() {
     email: '',
     phone: '',
     linkedin: '',
+    selectedJob: '',
     pdfFile: null,
   });
   
@@ -30,6 +40,15 @@ export default function FormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [dragActive, setDragActive] = useState(false);
+  const [availableJobs, setAvailableJobs] = useState<Job[]>([]);
+
+  // Load available jobs from localStorage
+  React.useEffect(() => {
+    const savedJobs = localStorage.getItem('unibra_jobs');
+    if (savedJobs) {
+      setAvailableJobs(JSON.parse(savedJobs));
+    }
+  }, []);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -62,6 +81,11 @@ export default function FormPage() {
     // Validate LinkedIn (optional)
     if (formData.linkedin.trim() && !formData.linkedin.includes('linkedin.com')) {
       newErrors.linkedin = 'URL do LinkedIn inválida';
+    }
+
+    // Validate job selection
+    if (!formData.selectedJob) {
+      newErrors.selectedJob = 'Seleção de vaga é obrigatória';
     }
 
     // Validate PDF file
@@ -135,6 +159,7 @@ export default function FormPage() {
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('linkedin', formData.linkedin);
+      formDataToSend.append('selectedJob', formData.selectedJob);
 
       if (formData.pdfFile) {
         formDataToSend.append('pdfFile', formData.pdfFile);
@@ -153,6 +178,7 @@ export default function FormPage() {
           email: '',
           phone: '',
           linkedin: '',
+          selectedJob: '',
           pdfFile: null,
         });
         // Reset file input
@@ -311,6 +337,47 @@ export default function FormPage() {
             </div>
             {errors.linkedin && (
               <p className="mt-1 text-sm text-red-600">{errors.linkedin}</p>
+            )}
+          </div>
+
+          {/* Job Selection Field */}
+          <div>
+            <label htmlFor="selectedJob" className="block text-sm font-medium text-azulUnibra-300 mb-2">
+              Vaga de interesse
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Briefcase className="h-5 w-5 text-azulUnibra-300" />
+              </div>
+              <select
+                id="selectedJob"
+                name="selectedJob"
+                value={formData.selectedJob}
+                onChange={(e) => {
+                  setFormData(prev => ({ ...prev, selectedJob: e.target.value }));
+                  if (errors.selectedJob) {
+                    setErrors(prev => ({ ...prev, selectedJob: undefined }));
+                  }
+                }}
+                className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent transition-all duration-200 ${
+                  errors.selectedJob ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Selecione uma vaga</option>
+                {availableJobs.map((job) => (
+                  <option key={job.id} value={job.id}>
+                    {job.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {errors.selectedJob && (
+              <p className="mt-1 text-sm text-red-600">{errors.selectedJob}</p>
+            )}
+            {availableJobs.length === 0 && (
+              <p className="mt-1 text-sm text-amber-600">
+                Nenhuma vaga disponível no momento
+              </p>
             )}
           </div>
 

@@ -2,22 +2,22 @@ import React, { useState } from 'react';
 import { Lock, User, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 interface LoginData {
-  username: string;
-  password: string;
+  email: string;
+  senha: string;
 }
 
 interface LoginErrors {
-  username?: string;
-  password?: string;
+  email?: string;
+  senha?: string;
   general?: string;
 }
 
 export default function LoginPage() {
   const [loginData, setLoginData] = useState<LoginData>({
-    username: '',
-    password: '',
+    email: '',
+    senha: '',
   });
-  
+
   const [errors, setErrors] = useState<LoginErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -25,14 +25,14 @@ export default function LoginPage() {
   const validateForm = (): boolean => {
     const newErrors: LoginErrors = {};
 
-    if (!loginData.username.trim()) {
-      newErrors.username = 'Usuário é obrigatório';
+    if (!loginData.email.trim()) {
+      newErrors.email = 'Email é obrigatório';
     }
 
-    if (!loginData.password.trim()) {
-      newErrors.password = 'Senha é obrigatória';
-    } else if (loginData.password.length < 6) {
-      newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
+    if (!loginData.senha.trim()) {
+      newErrors.senha = 'Senha é obrigatória';
+    } else if (loginData.senha.length < 6) {
+      newErrors.senha = 'Senha deve ter pelo menos 6 caracteres';
     }
 
     setErrors(newErrors);
@@ -42,11 +42,11 @@ export default function LoginPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setLoginData(prev => ({ ...prev, [name]: value }));
-    
+
     if (errors[name as keyof LoginErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
-    
+
     if (errors.general) {
       setErrors(prev => ({ ...prev, general: undefined }));
     }
@@ -54,27 +54,37 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
     setErrors({});
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // For demo purposes, accept any valid credentials
-      if (loginData.username && loginData.password.length >= 6) {
-        // Redirect to dashboard
-        window.location.href = '/dashboard';
-      } else {
-        setErrors({ general: 'Credenciais inválidas' });
+      const response = await fetch(
+        "https://process-select-backend.onrender.com/api/admin/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(loginData),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({ general: data.error || "Credenciais inválidas" });
+        return;
       }
-    } catch (error) {
-      setErrors({ general: 'Erro ao fazer login. Tente novamente.' });
+
+      // Login bem-sucedido → salvar token
+      localStorage.setItem("token", data.token);
+
+      // Redirecionar para dashboard
+      window.location.href = "/admin/dashboard";
+    } catch (err) {
+      console.error(err);
+      setErrors({ general: "Erro ao fazer login. Tente novamente." });
     } finally {
       setIsSubmitting(false);
     }
@@ -104,35 +114,35 @@ export default function LoginPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Username Field */}
+          {/* Email Field */}
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-azulUnibra-300 mb-2">
-              Usuário
+            <label htmlFor="email" className="block text-sm font-medium text-azulUnibra-300 mb-2">
+              Email
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <User className="h-5 w-5 text-azulUnibra-300" />
               </div>
               <input
-                type="text"
-                id="username"
-                name="username"
-                value={loginData.username}
+                type="email"
+                id="email"
+                name="email"
+                value={loginData.email}
                 onChange={handleInputChange}
                 className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent transition-all duration-200 ${
-                  errors.username ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
                 }`}
-                placeholder="Digite seu usuário"
+                placeholder="Digite seu email"
               />
             </div>
-            {errors.username && (
-              <p className="mt-1 text-sm text-red-600">{errors.username}</p>
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
             )}
           </div>
 
           {/* Password Field */}
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-azulUnibra-300 mb-2">
+            <label htmlFor="senha" className="block text-sm font-medium text-azulUnibra-300 mb-2">
               Senha
             </label>
             <div className="relative">
@@ -141,12 +151,12 @@ export default function LoginPage() {
               </div>
               <input
                 type={showPassword ? 'text' : 'password'}
-                id="password"
-                name="password"
-                value={loginData.password}
+                id="senha"
+                name="senha"
+                value={loginData.senha}
                 onChange={handleInputChange}
                 className={`block w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent transition-all duration-200 ${
-                  errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  errors.senha ? 'border-red-300 bg-red-50' : 'border-gray-300'
                 }`}
                 placeholder="Digite sua senha"
               />
@@ -162,8 +172,8 @@ export default function LoginPage() {
                 )}
               </button>
             </div>
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+            {errors.senha && (
+              <p className="mt-1 text-sm text-red-600">{errors.senha}</p>
             )}
           </div>
 

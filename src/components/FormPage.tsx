@@ -7,6 +7,7 @@ interface FormData {
   phone: string;
   linkedin: string;
   selectedJob: string;
+  jobDescription: string; // descrição da vaga
   pdfFile: File | null;
 }
 
@@ -21,10 +22,10 @@ interface FormErrors {
 
 interface Job {
   id: string;
-  title: string;
-  internalDescription: string;
-  isActive: boolean;
-  createdAt: string;
+  titulo: string;
+  descricao: string;
+  ativa: boolean;
+  criadoEm: string;
 }
 
 export default function FormPage() {
@@ -34,71 +35,44 @@ export default function FormPage() {
     phone: '',
     linkedin: '',
     selectedJob: '',
+    jobDescription: '',
     pdfFile: null,
   });
-  
+
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [dragActive, setDragActive] = useState(false);
   const [availableJobs, setAvailableJobs] = useState<Job[]>([]);
+  const [loadingJobs, setLoadingJobs] = useState(false);
 
-  // Load available jobs from localStorage
-  React.useEffect(() => {
-    const savedJobs = localStorage.getItem('unibra_jobs');
-    if (savedJobs) {
-      const allJobs = JSON.parse(savedJobs);
-      // Only show active jobs in the public form
-      setAvailableJobs(allJobs.filter((job: Job) => job.isActive));
-    }
-  }, []);
+  const API_URL = import.meta.env.VITE_API_URL;
+
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Validate full name
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Nome completo é obrigatório';
-    } else if (formData.fullName.trim().length < 2) {
-      newErrors.fullName = 'Nome deve ter pelo menos 2 caracteres';
-    }
+    if (!formData.fullName.trim()) newErrors.fullName = 'Nome completo é obrigatório';
+    else if (formData.fullName.trim().length < 2) newErrors.fullName = 'Nome deve ter pelo menos 2 caracteres';
 
-    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Email inválido';
-    }
+    if (!formData.email.trim()) newErrors.email = 'Email é obrigatório';
+    else if (!emailRegex.test(formData.email)) newErrors.email = 'Email inválido';
 
-    // Validate phone
     const phoneRegex = /^[\d\s\(\)\-\+]+$/;
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Telefone é obrigatório';
-    } else if (formData.phone.trim().length < 10) {
-      newErrors.phone = 'Telefone deve ter pelo menos 10 dígitos';
-    } else if (!phoneRegex.test(formData.phone)) {
-      newErrors.phone = 'Formato de telefone inválido';
-    }
+    if (!formData.phone.trim()) newErrors.phone = 'Telefone é obrigatório';
+    else if (formData.phone.trim().length < 10) newErrors.phone = 'Telefone deve ter pelo menos 10 dígitos';
+    else if (!phoneRegex.test(formData.phone)) newErrors.phone = 'Formato de telefone inválido';
 
-    // Validate LinkedIn (optional)
     if (formData.linkedin.trim() && !formData.linkedin.includes('linkedin.com')) {
       newErrors.linkedin = 'URL do LinkedIn inválida';
     }
 
-    // Validate job selection
-    if (!formData.selectedJob) {
-      newErrors.selectedJob = 'Seleção de vaga é obrigatória';
-    }
+    if (!formData.selectedJob) newErrors.selectedJob = 'Seleção de vaga é obrigatória';
 
-    // Validate PDF file
-    if (!formData.pdfFile) {
-      newErrors.pdfFile = 'Arquivo PDF é obrigatório';
-    } else if (formData.pdfFile.type !== 'application/pdf') {
-      newErrors.pdfFile = 'Apenas arquivos PDF são aceitos';
-    } else if (formData.pdfFile.size > 10 * 1024 * 1024) { // 10MB limit
-      newErrors.pdfFile = 'Arquivo deve ter no máximo 10MB';
-    }
+    if (!formData.pdfFile) newErrors.pdfFile = 'Arquivo PDF é obrigatório';
+    else if (formData.pdfFile.type !== 'application/pdf') newErrors.pdfFile = 'Apenas arquivos PDF são aceitos';
+    else if (formData.pdfFile.size > 10 * 1024 * 1024) newErrors.pdfFile = 'Arquivo deve ter no máximo 10MB';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -107,7 +81,6 @@ export default function FormPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
@@ -116,20 +89,13 @@ export default function FormPage() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     setFormData(prev => ({ ...prev, pdfFile: file }));
-    
-    if (errors.pdfFile) {
-      setErrors(prev => ({ ...prev, pdfFile: undefined }));
-    }
+    if (errors.pdfFile) setErrors(prev => ({ ...prev, pdfFile: undefined }));
   };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
+    setDragActive(e.type === 'dragenter' || e.type === 'dragover');
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -140,18 +106,45 @@ export default function FormPage() {
     const files = e.dataTransfer.files;
     if (files?.[0]) {
       setFormData(prev => ({ ...prev, pdfFile: files[0] }));
-      if (errors.pdfFile) {
-        setErrors(prev => ({ ...prev, pdfFile: undefined }));
-      }
+      if (errors.pdfFile) setErrors(prev => ({ ...prev, pdfFile: undefined }));
     }
+  };
+
+  const handleJobFocus = async () => {
+    setLoadingJobs(true);
+    try {
+      const res = await fetch(`${API_URL}/api/vagas/ativas`);
+      if (!res.ok) throw new Error('Erro ao buscar vagas ativas');
+      const data: Job[] = await res.json();
+      setAvailableJobs(data.filter(job => job.ativa));
+
+      {availableJobs.map(job => (
+        <option key={job.id} value={job.id}>
+          {job.titulo} {/* estava job.title */}
+        </option>
+      ))}
+    } catch (err) {
+      console.error('Erro ao buscar vagas:', err);
+      setAvailableJobs([]);
+    } finally {
+      setLoadingJobs(false);
+    }
+  };
+
+  const handleJobChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    const selectedJob = availableJobs.find(job => job.id === selectedId);
+    setFormData(prev => ({
+      ...prev,
+      selectedJob: selectedId,
+      jobDescription: selectedJob?.descricao || '',
+    }));
+    if (errors.selectedJob) setErrors(prev => ({ ...prev, selectedJob: undefined }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
     setSubmitStatus('idle');
@@ -163,35 +156,29 @@ export default function FormPage() {
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('linkedin', formData.linkedin);
       formDataToSend.append('selectedJob', formData.selectedJob);
+      formDataToSend.append('jobDescription', formData.jobDescription);
 
-      if (formData.pdfFile) {
-        formDataToSend.append('pdfFile', formData.pdfFile);
-      }
+      if (formData.pdfFile) formDataToSend.append('pdfFile', formData.pdfFile);
 
-      const response = await fetch('https://n8n.grupounibra.com/webhook/28f98daf-5c5e-4778-8e65-4814a40487bd', {
-        method: 'POST',
-        body: formDataToSend,
-      });
+      const response = await fetch(
+        'https://n8n.grupounibra.com/webhook/28f98daf-5c5e-4778-8e65-4814a40487bd',
+        { method: 'POST', body: formDataToSend }
+      );
 
       if (response.ok) {
         setSubmitStatus('success');
-        // Reset form
         setFormData({
           fullName: '',
           email: '',
           phone: '',
           linkedin: '',
           selectedJob: '',
+          jobDescription: '',
           pdfFile: null,
         });
-        // Reset file input
         const fileInput = document.getElementById('pdfFile') as HTMLInputElement;
-        if (fileInput) {
-          fileInput.value = '';
-        }
-      } else {
-        setSubmitStatus('error');
-      }
+        if (fileInput) fileInput.value = '';
+      } else setSubmitStatus('error');
     } catch (error) {
       console.error('Erro ao enviar formulário:', error);
       setSubmitStatus('error');
@@ -205,18 +192,14 @@ export default function FormPage() {
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-80 mx-auto mb-4">  
+          <div className="w-80 mx-auto mb-4">
             <img src="/assets/unibra-blue.png" alt="UNIBRA Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-azulUnibra-300 mb-2">
-            Processo seletivo
-          </h1>
-          <p className="text-azulUnibra-300 text-sm">
-            Preencha os dados abaixo para participar
-          </p>
+          <h1 className="text-2xl font-bold text-azulUnibra-300 mb-2">Processo seletivo</h1>
+          <p className="text-azulUnibra-300 text-sm">Preencha os dados abaixo para participar</p>
         </div>
 
-        {/* Success Message */}
+        {/* Messages */}
         {submitStatus === 'success' && (
           <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-3">
             <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -226,8 +209,6 @@ export default function FormPage() {
             </div>
           </div>
         )}
-
-        {/* Error Message */}
         {submitStatus === 'error' && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-3">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -239,7 +220,7 @@ export default function FormPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Full Name Field */}
+          {/* Full Name */}
           <div>
             <label htmlFor="fullName" className="block text-sm font-medium text-azulUnibra-300 mb-2">
               Nome completo
@@ -260,12 +241,10 @@ export default function FormPage() {
                 placeholder="Digite seu nome completo"
               />
             </div>
-            {errors.fullName && (
-              <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>
-            )}
+            {errors.fullName && <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>}
           </div>
 
-          {/* Email Field */}
+          {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-azulUnibra-300 mb-2">
               Email
@@ -286,12 +265,10 @@ export default function FormPage() {
                 placeholder="Digite seu email"
               />
             </div>
-            {errors.email && (
-              <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-            )}
+            {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
           </div>
 
-          {/* Phone Field */}
+          {/* Phone */}
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-azulUnibra-300 mb-2">
               Telefone
@@ -312,12 +289,10 @@ export default function FormPage() {
                 placeholder="(81) 99999-9999"
               />
             </div>
-            {errors.phone && (
-              <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
-            )}
+            {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
           </div>
 
-          {/* LinkedIn Field */}
+          {/* LinkedIn */}
           <div>
             <label htmlFor="linkedin" className="block text-sm font-medium text-azulUnibra-300 mb-2">
               LinkedIn <span className="text-gray-400 text-xs">(opcional)</span>
@@ -338,12 +313,10 @@ export default function FormPage() {
                 placeholder="https://linkedin.com/in/seu-perfil"
               />
             </div>
-            {errors.linkedin && (
-              <p className="mt-1 text-sm text-red-600">{errors.linkedin}</p>
-            )}
+            {errors.linkedin && <p className="mt-1 text-sm text-red-600">{errors.linkedin}</p>}
           </div>
 
-          {/* Job Selection Field */}
+          {/* Job Selection */}
           <div>
             <label htmlFor="selectedJob" className="block text-sm font-medium text-azulUnibra-300 mb-2">
               Vaga de interesse
@@ -356,46 +329,38 @@ export default function FormPage() {
                 id="selectedJob"
                 name="selectedJob"
                 value={formData.selectedJob}
-                onChange={(e) => {
-                  setFormData(prev => ({ ...prev, selectedJob: e.target.value }));
-                  if (errors.selectedJob) {
-                    setErrors(prev => ({ ...prev, selectedJob: undefined }));
-                  }
-                }}
-                className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent transition-all duration-200 ${
-                  errors.selectedJob ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                }`}
+                onChange={handleJobChange}
+                onFocus={handleJobFocus}
+                className="appearance-none block w-full pl-10 pr-3 py-2 border rounded-lg"
               >
-                <option value="">Selecione uma vaga</option>
-                {availableJobs.map((job) => (
+                <option value="">
+                  {loadingJobs ? 'Carregando vagas...' : 'Selecione uma vaga'}
+                </option>
+                {availableJobs.map(job => (
                   <option key={job.id} value={job.id}>
-                    {job.title}
+                    {job.titulo}
                   </option>
                 ))}
               </select>
             </div>
-            {errors.selectedJob && (
-              <p className="mt-1 text-sm text-red-600">{errors.selectedJob}</p>
-            )}
+            {errors.selectedJob && <p className="mt-1 text-sm text-red-600">{errors.selectedJob}</p>}
             {availableJobs.length === 0 && (
-              <p className="mt-1 text-sm text-amber-600">
-                Nenhuma vaga disponível no momento
-              </p>
+              <p className="mt-1 text-sm text-amber-600">Nenhuma vaga selecionada!</p>
             )}
           </div>
 
-          {/* PDF File Upload */}
+          {/* PDF Upload */}
           <div>
             <label htmlFor="pdfFile" className="block text-sm font-medium text-azulUnibra-300 mb-2">
               Arquivo PDF
             </label>
             <div
               className={`relative border-2 border-dashed rounded-lg p-6 transition-all duration-200 ${
-                dragActive 
-                  ? 'border-azulUnibra-300 bg-blue-50' 
-                  : errors.pdfFile 
-                    ? 'border-red-300 bg-red-50' 
-                    : 'border-gray-300 hover:border-gray-400'
+                dragActive
+                  ? 'border-azulUnibra-300 bg-blue-50'
+                  : errors.pdfFile
+                  ? 'border-red-300 bg-red-50'
+                  : 'border-gray-300 hover:border-gray-400'
               }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
@@ -409,38 +374,29 @@ export default function FormPage() {
                 onChange={handleFileChange}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
-              
               <div className="text-center">
                 <Upload className={`mx-auto h-12 w-12 ${dragActive ? 'text-azulUnibra-300' : 'text-gray-400'}`} />
                 <div className="mt-4">
                   {formData.pdfFile ? (
                     <div>
-                      <p className="text-sm font-medium text-azulUnibra-300">
-                        {formData.pdfFile.name}
-                      </p>
-                      <p className="text-xs text-azulUnibra-300">
-                        {(formData.pdfFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
+                      <p className="text-sm font-medium text-azulUnibra-300">{formData.pdfFile.name}</p>
+                      <p className="text-xs text-azulUnibra-300">{(formData.pdfFile.size / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
                   ) : (
                     <div>
                       <p className="text-sm text-azulUnibra-300">
                         <span className="font-medium">Clique para selecionar</span> ou arraste o arquivo aqui
                       </p>
-                      <p className="text-xs text-azulUnibra-300 mt-1">
-                        Apenas arquivos PDF (máx. 10MB)
-                      </p>
+                      <p className="text-xs text-azulUnibra-300 mt-1">Apenas arquivos PDF (máx. 10MB)</p>
                     </div>
                   )}
                 </div>
               </div>
             </div>
-            {errors.pdfFile && (
-              <p className="mt-1 text-sm text-red-600">{errors.pdfFile}</p>
-            )}
+            {errors.pdfFile && <p className="mt-1 text-sm text-red-600">{errors.pdfFile}</p>}
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}

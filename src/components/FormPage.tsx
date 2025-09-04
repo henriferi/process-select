@@ -23,6 +23,7 @@ interface Job {
   id: string;
   title: string;
   internalDescription: string;
+  isActive: boolean;
   createdAt: string;
 }
 
@@ -46,7 +47,9 @@ export default function FormPage() {
   React.useEffect(() => {
     const savedJobs = localStorage.getItem('unibra_jobs');
     if (savedJobs) {
-      setAvailableJobs(JSON.parse(savedJobs));
+      const allJobs = JSON.parse(savedJobs);
+      // Only show active jobs in the public form
+      setAvailableJobs(allJobs.filter((job: Job) => job.isActive));
     }
   }, []);
 

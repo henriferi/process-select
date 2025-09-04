@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Briefcase, FileText, Users, LogOut } from 'lucide-react';
+import { Plus, Edit2, Trash2, Briefcase, FileText, Users, LogOut, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface Job {
   id: string;
   title: string;
   internalDescription: string;
+  isActive: boolean;
   createdAt: string;
 }
 
@@ -96,6 +97,7 @@ export default function Dashboard() {
           id: Date.now().toString(),
           title: jobFormData.title,
           internalDescription: jobFormData.internalDescription,
+          isActive: true,
           createdAt: new Date().toISOString(),
         };
         setJobs(prev => [...prev, newJob]);
@@ -125,6 +127,14 @@ export default function Dashboard() {
     if (window.confirm('Tem certeza que deseja excluir esta vaga?')) {
       setJobs(prev => prev.filter(job => job.id !== jobId));
     }
+  };
+
+  const handleToggleJobStatus = (jobId: string) => {
+    setJobs(prev => prev.map(job => 
+      job.id === jobId 
+        ? { ...job, isActive: !job.isActive }
+        : job
+    ));
   };
 
   const handleLogout = () => {
@@ -173,7 +183,7 @@ export default function Dashboard() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Vagas Ativas</p>
-                <p className="text-2xl font-bold text-azulUnibra-300">{jobs.length}</p>
+                <p className="text-2xl font-bold text-azulUnibra-300">{jobs.filter(job => job.isActive).length}</p>
               </div>
             </div>
           </div>
@@ -306,16 +316,46 @@ export default function Dashboard() {
             ) : (
               <div className="space-y-4">
                 {jobs.map((job) => (
-                  <div key={job.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div key={job.id} className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
+                    job.isActive ? 'border-gray-200 bg-white' : 'border-gray-300 bg-gray-50'
+                  }`}>
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-azulUnibra-300 mb-2">{job.title}</h3>
-                        <p className="text-gray-600 text-sm mb-2">{job.internalDescription}</p>
+                        <div className="flex items-center space-x-2 mb-2">
+                          <h3 className={`font-semibold ${job.isActive ? 'text-azulUnibra-300' : 'text-gray-500'}`}>
+                            {job.title}
+                          </h3>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            job.isActive 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-gray-100 text-gray-600'
+                          }`}>
+                            {job.isActive ? 'Ativa' : 'Inativa'}
+                          </span>
+                        </div>
+                        <p className={`text-sm mb-2 ${job.isActive ? 'text-gray-600' : 'text-gray-500'}`}>
+                          {job.internalDescription}
+                        </p>
                         <p className="text-xs text-gray-400">
                           Criada em: {new Date(job.createdAt).toLocaleDateString('pt-BR')}
                         </p>
                       </div>
                       <div className="flex space-x-2 ml-4">
+                        <button
+                          onClick={() => handleToggleJobStatus(job.id)}
+                          className={`p-2 rounded-lg transition-colors ${
+                            job.isActive 
+                              ? 'text-orange-600 hover:bg-orange-50' 
+                              : 'text-green-600 hover:bg-green-50'
+                          }`}
+                          title={job.isActive ? 'Desativar vaga' : 'Ativar vaga'}
+                        >
+                          {job.isActive ? (
+                            <AlertCircle className="w-4 h-4" />
+                          ) : (
+                            <CheckCircle className="w-4 h-4" />
+                          )}
+                        </button>
                         <button
                           onClick={() => handleEditJob(job)}
                           className="p-2 text-azulUnibra-300 hover:bg-blue-50 rounded-lg transition-colors"

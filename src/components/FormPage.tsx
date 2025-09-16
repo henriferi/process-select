@@ -7,7 +7,7 @@ interface FormData {
   phone: string;
   linkedin: string;
   selectedJob: string;
-  jobDescription: string; // descrição da vaga
+  descDaVaga: string; // descrição da vaga
   pdfFile: File | null;
 }
 
@@ -35,7 +35,7 @@ export default function FormPage() {
     phone: '',
     linkedin: '',
     selectedJob: '',
-    jobDescription: '',
+    descDaVaga: '',
     pdfFile: null,
   });
 
@@ -137,7 +137,7 @@ export default function FormPage() {
     setFormData(prev => ({
       ...prev,
       selectedJob: selectedId,
-      jobDescription: selectedJob?.descricao || '',
+      descDaVaga: selectedJob?.descricao || '',
     }));
     if (errors.selectedJob) setErrors(prev => ({ ...prev, selectedJob: undefined }));
   };
@@ -156,9 +156,16 @@ export default function FormPage() {
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('linkedin', formData.linkedin);
       formDataToSend.append('selectedJob', formData.selectedJob);
-      formDataToSend.append('jobDescription', formData.jobDescription);
 
-      if (formData.pdfFile) formDataToSend.append('pdfFile', formData.pdfFile);
+      const selectedJobObj = availableJobs.find(
+        job => String(job.id) === String(formData.selectedJob)
+      );
+      formDataToSend.append('descDaVaga', selectedJobObj?.descricao || '');
+      formDataToSend.append('nomeDaVaga', selectedJobObj?.titulo || '');
+
+      if (formData.pdfFile) {
+        formDataToSend.append('pdfFile', formData.pdfFile);
+      }
 
       const response = await fetch(`${API_URL}/api/curriculos`, {
         method: 'POST',
@@ -173,7 +180,7 @@ export default function FormPage() {
           phone: '',
           linkedin: '',
           selectedJob: '',
-          jobDescription: '',
+          descDaVaga: '',
           pdfFile: null,
         });
         const fileInput = document.getElementById('pdfFile') as HTMLInputElement;
@@ -190,7 +197,6 @@ export default function FormPage() {
       setIsSubmitting(false);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">

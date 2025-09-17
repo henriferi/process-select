@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, User, Mail, Phone, Linkedin, FileText, CheckCircle, AlertCircle, Loader2, Briefcase } from 'lucide-react';
+import ReCAPTCHA from "react-google-recaptcha";
+
 
 interface FormData {
   fullName: string;
@@ -29,6 +31,7 @@ interface Job {
 }
 
 export default function FormPage() {
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     email: '',
@@ -145,9 +148,14 @@ export default function FormPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-
+    
+    if (!recaptchaToken) {
+      alert("Por favor, confirme o reCAPTCHA antes de enviar.");
+      return;
+    }
     setIsSubmitting(true);
     setSubmitStatus('idle');
+
 
     try {
       const formDataToSend = new FormData();
@@ -166,6 +174,8 @@ export default function FormPage() {
       if (formData.pdfFile) {
         formDataToSend.append('pdfFile', formData.pdfFile);
       }
+
+      formDataToSend.append("g-recaptcha-response", recaptchaToken);
 
       const response = await fetch(`${API_URL}/api/curriculos`, {
         method: 'POST',
@@ -406,6 +416,11 @@ export default function FormPage() {
             </div>
             {errors.pdfFile && <p className="mt-1 text-sm text-red-600">{errors.pdfFile}</p>}
           </div>
+
+        <ReCAPTCHA
+          sitekey="6Lfi78wrAAAAABsDR18JSQ1Ifjpr9cxvw3zqzOx6"
+          onChange={(token) => setRecaptchaToken(token)}
+        />
 
           {/* Submit */}
           <button

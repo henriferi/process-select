@@ -170,6 +170,8 @@ export default function FormPage() {
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('linkedin', formData.linkedin);
       formDataToSend.append('selectedJob', formData.selectedJob);
+      
+      formDataToSend.append('id_vaga', formData.selectedJob);
 
       const selectedJobObj = availableJobs.find(
         job => String(job.id) === String(formData.selectedJob)

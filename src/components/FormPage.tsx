@@ -5,6 +5,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 
 interface FormData {
   fullName: string;
+  cpf: string;
   email: string;
   phone: string;
   linkedin: string;
@@ -15,6 +16,7 @@ interface FormData {
 
 interface FormErrors {
   fullName?: string;
+  cpf?: string;
   email?: string;
   phone?: string;
   linkedin?: string;
@@ -34,6 +36,7 @@ export default function FormPage() {
   const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
+    cpf: '',
     email: '',
     phone: '',
     linkedin: '',
@@ -57,6 +60,8 @@ export default function FormPage() {
 
     if (!formData.fullName.trim()) newErrors.fullName = 'Nome completo é obrigatório';
     else if (formData.fullName.trim().length < 2) newErrors.fullName = 'Nome deve ter pelo menos 2 caracteres';
+    
+    if (!formData.cpf.trim()) newErrors.cpf = 'CPF é obrigatório';
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email.trim()) newErrors.email = 'Email é obrigatório';
@@ -160,6 +165,7 @@ export default function FormPage() {
     try {
       const formDataToSend = new FormData();
       formDataToSend.append('fullName', formData.fullName);
+      formDataToSend.append('cpf', formData.cpf);
       formDataToSend.append('email', formData.email);
       formDataToSend.append('phone', formData.phone);
       formDataToSend.append('linkedin', formData.linkedin);
@@ -186,6 +192,7 @@ export default function FormPage() {
         setSubmitStatus('success');
         setFormData({
           fullName: '',
+          cpf: '',
           email: '',
           phone: '',
           linkedin: '',

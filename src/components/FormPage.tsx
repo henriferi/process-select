@@ -272,6 +272,31 @@ export default function FormPage() {
             {errors.fullName && <p className="mt-1 text-sm text-red-600">{errors.fullName}</p>}
           </div>
 
+          {/* CPF */}
+          <div>
+            <label htmlFor="cpf" className="block text-sm font-medium text-azulUnibra-300 mb-2">
+              CPF
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FileText className="h-5 w-5 text-azulUnibra-300" />
+              </div>
+              <input
+                type="text"
+                id="cpf"
+                name="cpf"
+                value={formData.cpf}
+                onChange={handleInputChange}
+                className={`block w-full pl-10 pr-3 py-3 border rounded-lg focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent transition-all duration-200 ${
+                  errors.cpf ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                }`}
+                placeholder="000.000.000-00"
+                maxLength={14}
+              />
+            </div>
+            {errors.cpf && <p className="mt-1 text-sm text-red-600">{errors.cpf}</p>}
+          </div>
+
           {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-azulUnibra-300 mb-2">

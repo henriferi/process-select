@@ -50,6 +50,8 @@ export default function Dashboard() {
 
   const [loadingToggleIds, setLoadingToggleIds] = useState<number[]>([]);
   const [loadingDeleteIds, setLoadingDeleteIds] = useState<number[]>([]);
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [showCandidateModal, setShowCandidateModal] = useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -254,6 +256,16 @@ export default function Dashboard() {
     setEditingJob(null);
     setJobFormData({ titulo: '', descricao: '' });
     setJobFormErrors({});
+  };
+
+  const handleCandidateClick = (candidate: Candidate) => {
+    setSelectedCandidate(candidate);
+    setShowCandidateModal(true);
+  };
+
+  const closeCandidateModal = () => {
+    setShowCandidateModal(false);
+    setSelectedCandidate(null);
   };
 
   return (
@@ -489,7 +501,11 @@ export default function Dashboard() {
                     const matchValue = Math.round(parseFloat(String(candidate.MATCH_COM_VAGA)) * 100);
 
                     return (
-                      <div key={candidate.ID} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div 
+                        key={candidate.ID} 
+                        className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all cursor-pointer hover:bg-gray-50"
+                        onClick={() => handleCandidateClick(candidate)}
+                      >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-3">
@@ -567,6 +583,7 @@ export default function Dashboard() {
                           <div className="flex space-x-2 ml-4">
                             <a
                               href={candidate.CURRICULO}
+                              onClick={(e) => e.stopPropagation()}
                               rel="noopener noreferrer"
                               className="p-2 text-azulUnibra-300 hover:bg-blue-50 transition-colors rounded-lg inline-flex"
                               title="Baixar currículo"
@@ -586,6 +603,199 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Candidate Details Modal */}
+      {showCandidateModal && selectedCandidate && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-azulUnibra-300 text-white p-6 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold">{selectedCandidate.NOME}</h2>
+                <p className="text-blue-100 text-sm">Detalhes do Candidato</p>
+              </div>
+              <button
+                onClick={closeCandidateModal}
+                className="text-white hover:text-gray-200 transition-colors p-2 hover:bg-blue-900 rounded-lg"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left Column - Personal Info */}
+                <div className="space-y-6">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-azulUnibra-300 mb-4 flex items-center">
+                      <User className="w-5 h-5 mr-2" />
+                      Informações Pessoais
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-3">
+                        <FileText className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <span className="text-sm font-medium text-gray-600">CPF:</span>
+                          <p className="text-azulUnibra-300">{selectedCandidate.CPF}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Mail className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <span className="text-sm font-medium text-gray-600">Email:</span>
+                          <a href={`mailto:${selectedCandidate.EMAIL}`} className="text-azulUnibra-300 hover:underline block">
+                            {selectedCandidate.EMAIL}
+                          </a>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <span className="text-sm font-medium text-gray-600">Telefone:</span>
+                          <a href={`tel:${selectedCandidate.TELEFONE}`} className="text-azulUnibra-300 hover:underline block">
+                            {selectedCandidate.TELEFONE}
+                          </a>
+                        </div>
+                      </div>
+                      {selectedCandidate.LINKEDIN && (
+                        <div className="flex items-center space-x-3">
+                          <Linkedin className="w-4 h-4 text-gray-400" />
+                          <div>
+                            <span className="text-sm font-medium text-gray-600">LinkedIn:</span>
+                            <a
+                              href={selectedCandidate.LINKEDIN}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-azulUnibra-300 hover:underline block"
+                            >
+                              Ver perfil
+                            </a>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="text-lg font-semibold text-azulUnibra-300 mb-4 flex items-center">
+                      <Briefcase className="w-5 h-5 mr-2" />
+                      Informações da Candidatura
+                    </h3>
+                    <div className="space-y-3">
+                      <div>
+                        <span className="text-sm font-medium text-gray-600">Vaga:</span>
+                        <p className="text-azulUnibra-300 font-medium">{selectedCandidate.VAGA}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-600">Descrição da Vaga:</span>
+                        <p className="text-gray-700 text-sm mt-1">{selectedCandidate.DESCRICAO_DA_VAGA}</p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <span className="text-sm font-medium text-gray-600">Match com a Vaga:</span>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <div className="w-full bg-gray-200 rounded-full h-2 max-w-[120px]">
+                              <div 
+                                className={`h-2 rounded-full ${
+                                  Math.round(parseFloat(String(selectedCandidate.MATCH_COM_VAGA)) * 100) < 50
+                                    ? "bg-red-500"
+                                    : Math.round(parseFloat(String(selectedCandidate.MATCH_COM_VAGA)) * 100) === 50
+                                    ? "bg-yellow-500"
+                                    : "bg-green-500"
+                                }`}
+                                style={{ width: `${Math.round(parseFloat(String(selectedCandidate.MATCH_COM_VAGA)) * 100)}%` }}
+                              ></div>
+                            </div>
+                            <span className={`text-sm font-semibold ${
+                              Math.round(parseFloat(String(selectedCandidate.MATCH_COM_VAGA)) * 100) < 50
+                                ? "text-red-600"
+                                : Math.round(parseFloat(String(selectedCandidate.MATCH_COM_VAGA)) * 100) === 50
+                                ? "text-yellow-600"
+                                : "text-green-600"
+                            }`}>
+                              {Math.round(parseFloat(String(selectedCandidate.MATCH_COM_VAGA)) * 100)}%
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <span className="text-sm font-medium text-gray-600">Data da Candidatura:</span>
+                          <p className="text-gray-700">{new Date(selectedCandidate.DATA_ULTIMA_CANDIDATURA).toLocaleDateString('pt-BR')}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <Download className="w-4 h-4 text-gray-400" />
+                        <div>
+                          <span className="text-sm font-medium text-gray-600">Currículo:</span>
+                          <a
+                            href={selectedCandidate.CURRICULO}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-azulUnibra-300 hover:underline block"
+                          >
+                            Baixar PDF
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column - AI Analysis */}
+                <div className="space-y-6">
+                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                    <h3 className="text-lg font-semibold text-azulUnibra-300 mb-4 flex items-center">
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      Análise da IA
+                    </h3>
+                    <div className="bg-white rounded-lg p-4 border border-blue-100 max-h-96 overflow-y-auto">
+                      <div className="prose prose-sm max-w-none">
+                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                          {selectedCandidate.ANALISE_DO_CANDIDATO}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 text-xs text-blue-600 bg-blue-100 rounded-lg p-2">
+                      <div className="flex items-center space-x-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <span>Esta análise foi gerada automaticamente por inteligência artificial</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-gray-50 px-6 py-4 flex justify-end space-x-3">
+              <a
+                href={selectedCandidate.CURRICULO}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-azulUnibra-300 hover:bg-blue-900 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                <span>Baixar Currículo</span>
+              </a>
+              <button
+                onClick={closeCandidateModal}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

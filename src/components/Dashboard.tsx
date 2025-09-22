@@ -479,6 +479,21 @@ export default function Dashboard() {
                       </option>
                     ))}
                   </select>
+
+                  <div className="flex items-center space-x-2">
+                    <label htmlFor="sortFilter" className="text-sm font-medium text-azulUnibra-300">
+                      Ordenar por match:
+                    </label>
+                  </div>
+                  <select
+                    id="sortFilter"
+                    value={sortOrder}
+                    onChange={handleSortChange}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent"
+                  >
+                    <option value="desc">Maior primeiro</option>
+                    <option value="asc">Menor primeiro</option>
+                  </select>
                 </div>
               </div>
 

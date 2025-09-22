@@ -734,7 +734,6 @@ export default function Dashboard() {
                           <span className="text-sm font-medium text-gray-600">Currículo:</span>
                           <a
                             href={selectedCandidate.CURRICULO}
-                            target="_blank"
                             rel="noopener noreferrer"
                             className="text-azulUnibra-300 hover:underline block"
                           >

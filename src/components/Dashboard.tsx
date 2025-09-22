@@ -458,45 +458,29 @@ export default function Dashboard() {
                   </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row md:items-center md:space-x-6 space-y-3 md:space-y-0 px-6 py-4 border-b border-gray-200">
-                  {/* Filtro por vaga */}
+                {/* Filter */}
+                <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
                     <Filter className="w-4 h-4 text-azulUnibra-300" />
                     <label htmlFor="jobFilter" className="text-sm font-medium text-azulUnibra-300">
                       Filtrar por vaga:
                     </label>
-                    <select
-                      id="jobFilter"
-                      value={selectedJobFilter}
-                      onChange={handleJobFilterChange}
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent"
-                    >
-                      <option value="">Todas as vagas</option>
-                      {jobs.map(job => (
-                        <option key={job.id} value={job.id}>
-                          {job.titulo}
-                        </option>
-                      ))}
-                    </select>
                   </div>
-                
-                  {/* Ordenar por match */}
-                  <div className="flex items-center space-x-2">
-                    <label htmlFor="sortFilter" className="text-sm font-medium text-azulUnibra-300">
-                      Ordenar por match:
-                    </label>
-                    <select
-                      id="sortFilter"
-                      value={sortOrder}
-                      onChange={handleSortChange}
-                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent"
-                    >
-                      <option value="desc">Maior primeiro</option>
-                      <option value="asc">Menor primeiro</option>
-                    </select>
-                  </div>
+                  <select
+                    id="jobFilter"
+                    value={selectedJobFilter}
+                    onChange={handleJobFilterChange}
+                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent"
+                  >
+                    <option value="">Todas as vagas</option>
+                    {jobs.map(job => (
+                      <option key={job.id} value={job.id}>
+                        {job.titulo}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-
+              </div>
 
               <div className="p-6">
                 {loadingCandidates ? (
@@ -618,6 +602,8 @@ export default function Dashboard() {
             </>
           )}
         </div>
+      </div>
+
       {/* Candidate Details Modal */}
       {showCandidateModal && selectedCandidate && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

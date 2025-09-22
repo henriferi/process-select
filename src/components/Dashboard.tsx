@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Briefcase, FileText, Users, LogOut, AlertCircle, CheckCircle, Download, Eye, Filter, Calendar, Mail, Phone, Linkedin, PersonStanding } from 'lucide-react';
+import { Plus, Edit2, Trash2, Briefcase, FileText, Users, LogOut, AlertCircle, CheckCircle, Download, Eye, Filter, Calendar, Mail, Phone, Linkedin, PersonStanding, User } from 'lucide-react';
 
 interface Job {
   id: number;

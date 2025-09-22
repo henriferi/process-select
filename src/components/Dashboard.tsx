@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Briefcase, FileText, Users, LogOut, AlertCircle, CheckCircle, Download, Eye, Filter, Calendar, Mail, Phone, Linkedin } from 'lucide-react';
+import { Plus, Edit2, Trash2, Briefcase, FileText, Users, LogOut, AlertCircle, CheckCircle, Download, Eye, Filter, Calendar, Mail, Phone, Linkedin, PersonStanding } from 'lucide-react';
 
 interface Job {
   id: number;
@@ -15,16 +15,20 @@ interface JobFormData {
 }
 
 interface Candidate {
-  id: number;
-  fullName: string;
-  email: string;
-  phone: string;
-  linkedin?: string;
-  nomeDaVaga: string;
-  descDaVaga: string;
-  pdfFileName: string;
-  criadoEm: string;
-  selectedJob: number;
+  ID: number;
+  CPF: string;
+  NOME: string;
+  EMAIL: string;
+  TELEFONE: string;
+  LINKEDIN?: string;
+  DESCRICAO_DA_VAGA: string;
+  VAGA: string;
+  ANALISE_DO_CANDIDATO: string;
+  MATCH_COM_VAGA: number;
+  CURRICULO: string;
+  ID_VAGA: number;
+  CANDIDATURA: string;
+  DATA_ULTIMA_CANDIDATURA: string;  
 }
 interface JobFormErrors {
   titulo?: string;
@@ -89,7 +93,7 @@ export default function Dashboard() {
   const fetchCandidates = async () => {
     setLoadingCandidates(true);
     try {
-      const res = await fetch(`${API_URL}/api/curriculos`, { headers: getAuthHeaders() });
+      const res = await fetch(`${API_URL}/api/candidatos`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error('Erro ao buscar candidatos');
       const data = await res.json();
       setCandidates(data);
@@ -117,7 +121,7 @@ export default function Dashboard() {
       setFilteredCandidates(candidates);
     } else {
       const filtered = candidates.filter(candidate => 
-        String(candidate.selectedJob) === String(jobId)
+        String(candidate.VAGA) === String(jobId)
       );
       setFilteredCandidates(filtered);
     }
@@ -481,38 +485,68 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {filteredCandidates.map(candidate => (
-                      <div key={candidate.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  {filteredCandidates.map(candidate => {
+                    const matchValue = Math.round(parseFloat(String(candidate.MATCH_COM_VAGA)) * 100);
+
+                    return (
+                      <div key={candidate.ID} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <div className="flex items-center space-x-3 mb-3">
-                              <h3 className="font-semibold text-azulUnibra-300 text-lg">{candidate.fullName}</h3>
-                              <span className="px-2 py-1 text-xs bg-blue-100 text-azulUnibra-300 rounded-full">
-                                {candidate.nomeDaVaga}
-                              </span>
+                            <div className="flex items-center justify-between mb-3">
+                              {/* Esquerda */}
+                              <div className="flex items-center space-x-3">
+                                <h3 className="font-semibold text-azulUnibra-300 text-lg">{candidate.NOME}</h3>
+                                <span className="px-2 py-1 text-xs bg-blue-100 text-azulUnibra-300 rounded-full">
+                                  {candidate.VAGA}
+                                </span>
+                              </div>
+
+                              {/* Direita (Match) */}
+                              <div className="flex items-center space-x-2">
+                                <span className="text-sm font-medium text-gray-600">Match:</span>
+                                <span
+                                  className={`px-3 py-1 text-xs font-semibold rounded-full
+                                    ${
+                                      matchValue < 50
+                                        ? "bg-red-100 text-red-600"
+                                        : matchValue === 50
+                                        ? "bg-yellow-100 text-yellow-600"
+                                        : "bg-green-100 text-green-600"
+                                    }`}
+                                >
+                                  {matchValue}%
+                                </span>
+                              </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                               <div className="flex items-center space-x-2">
                                 <Mail className="w-4 h-4 text-gray-400" />
-                                <a href={`mailto:${candidate.email}`} className="text-azulUnibra-300 hover:underline">
-                                  {candidate.email}
+                                <a href={`mailto:${candidate.EMAIL}`} className="text-azulUnibra-300 hover:underline">
+                                  {candidate.EMAIL}
                                 </a>
                               </div>
-                              
+
+                              <div className="flex items-center space-x-2">
+                                <FileText className="w-4 h-4 text-gray-400" />
+                                <p className="text-azulUnibra-300">
+                                  {candidate.CPF}
+                                </p>
+                              </div>
+
                               <div className="flex items-center space-x-2">
                                 <Phone className="w-4 h-4 text-gray-400" />
-                                <a href={`tel:${candidate.phone}`} className="text-azulUnibra-300 hover:underline">
-                                  {candidate.phone}
+                                <a href={`tel:${candidate.TELEFONE}`} className="text-azulUnibra-300 hover:underline">
+                                  {candidate.TELEFONE}
                                 </a>
                               </div>
-                              
-                              {candidate.linkedin && (
+
+                              {candidate.LINKEDIN && (
                                 <div className="flex items-center space-x-2">
                                   <Linkedin className="w-4 h-4 text-gray-400" />
-                                  <a 
-                                    href={candidate.linkedin} 
-                                    target="_blank" 
+                                  <a
+                                    href={candidate.LINKEDIN}
+                                      target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-azulUnibra-300 hover:underline truncate"
                                   >
@@ -520,28 +554,31 @@ export default function Dashboard() {
                                   </a>
                                 </div>
                               )}
-                              
+
                               <div className="flex items-center space-x-2">
                                 <Calendar className="w-4 h-4 text-gray-400" />
                                 <span className="text-gray-600">
-                                  {new Date(candidate.criadoEm).toLocaleDateString('pt-BR')}
+                                  {new Date(candidate.DATA_ULTIMA_CANDIDATURA).toLocaleDateString('pt-BR')}
                                 </span>
                               </div>
                             </div>
                           </div>
-                          
+
                           <div className="flex space-x-2 ml-4">
-                            <button
-                              onClick={() => handleDownloadCV(candidate.id, candidate.pdfFileName)}
-                              className="p-2 text-azulUnibra-300 hover:bg-blue-50 rounded-lg transition-colors"
+                            <a
+                              href={candidate.CURRICULO}
+                              rel="noopener noreferrer"
+                              className="p-2 text-azulUnibra-300 hover:bg-blue-50 transition-colors rounded-lg inline-flex"
                               title="Baixar currículo"
                             >
                               <Download className="w-4 h-4" />
-                            </button>
+                            </a>
                           </div>
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
+
                   </div>
                 )}
               </div>

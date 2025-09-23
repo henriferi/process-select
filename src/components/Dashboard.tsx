@@ -41,6 +41,7 @@ export default function Dashboard() {
   const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>([]);
   const [activeTab, setActiveTab] = useState<'jobs' | 'candidates'>('jobs');
   const [selectedJobFilter, setSelectedJobFilter] = useState<string>('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [loadingCandidates, setLoadingCandidates] = useState(false);
   const [showJobForm, setShowJobForm] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
@@ -99,7 +100,13 @@ export default function Dashboard() {
       if (!res.ok) throw new Error('Erro ao buscar candidatos');
       const data = await res.json();
       setCandidates(data);
-      setFilteredCandidates(data);
+      // Aplicar filtros e ordenação aos dados carregados
+      const sorted = [...data].sort((a, b) => {
+        const matchA = parseFloat(String(a.MATCH_COM_VAGA));
+        const matchB = parseFloat(String(b.MATCH_COM_VAGA));
+        return matchB - matchA; // Padrão: maior primeiro
+      });
+      setFilteredCandidates(sorted);
     } catch (err) {
       console.error(err);
       alert('Erro ao carregar candidatos');
@@ -119,14 +126,38 @@ export default function Dashboard() {
     const jobId = e.target.value;
     setSelectedJobFilter(jobId);
     
-    if (jobId === '') {
-      setFilteredCandidates(candidates);
-    } else {
-      const filtered = candidates.filter(candidate => 
+    applyFiltersAndSort(jobId, sortOrder);
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSortOrder = e.target.value as 'asc' | 'desc';
+    setSortOrder(newSortOrder);
+    applyFiltersAndSort(selectedJobFilter, newSortOrder);
+  };
+
+  const applyFiltersAndSort = (jobId: string, order: 'asc' | 'desc') => {
+    let filtered = candidates;
+    
+    // Aplicar filtro por vaga
+    if (jobId !== '') {
+      filtered = candidates.filter(candidate => 
         String(candidate.VAGA) === String(jobId)
       );
-      setFilteredCandidates(filtered);
     }
+    
+    // Aplicar ordenação por match
+    const sorted = [...filtered].sort((a, b) => {
+      const matchA = parseFloat(String(a.MATCH_COM_VAGA));
+      const matchB = parseFloat(String(b.MATCH_COM_VAGA));
+      
+      if (order === 'desc') {
+        return matchB - matchA; // Maior primeiro
+      } else {
+        return matchA - matchB; // Menor primeiro
+      }
+    });
+    
+    setFilteredCandidates(sorted);
   };
 
   const handleDownloadCV = async (candidateId: number, fileName: string) => {
@@ -459,26 +490,41 @@ export default function Dashboard() {
                 </div>
 
                 {/* Filter */}
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-6">
                   <div className="flex items-center space-x-2">
                     <Filter className="w-4 h-4 text-azulUnibra-300" />
                     <label htmlFor="jobFilter" className="text-sm font-medium text-azulUnibra-300">
                       Filtrar por vaga:
                     </label>
+                    <select
+                      id="jobFilter"
+                      value={selectedJobFilter}
+                      onChange={handleJobFilterChange}
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent"
+                    >
+                      <option value="">Todas as vagas</option>
+                      {jobs.map(job => (
+                        <option key={job.id} value={job.id}>
+                          {job.titulo}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <select
-                    id="jobFilter"
-                    value={selectedJobFilter}
-                    onChange={handleJobFilterChange}
-                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent"
-                  >
-                    <option value="">Todas as vagas</option>
-                    {jobs.map(job => (
-                      <option key={job.id} value={job.id}>
-                        {job.titulo}
-                      </option>
-                    ))}
-                  </select>
+
+                  <div className="flex items-center space-x-2">
+                    <label htmlFor="sortFilter" className="text-sm font-medium text-azulUnibra-300">
+                      Ordenar por match:
+                    </label>
+                    <select
+                      id="sortFilter"
+                      value={sortOrder}
+                      onChange={handleSortChange}
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-azulUnibra-300 focus:border-transparent"
+                    >
+                      <option value="desc">Maior primeiro</option>
+                      <option value="asc">Menor primeiro</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 

@@ -160,27 +160,6 @@ export default function Dashboard() {
     setFilteredCandidates(sorted);
   };
 
-  const handleDownloadCV = async (candidateId: number, fileName: string) => {
-    try {
-      const res = await fetch(`${API_URL}/api/curriculos/${candidateId}/download`, {
-        headers: getAuthHeaders(),
-      });
-      if (!res.ok) throw new Error('Erro ao baixar currículo');
-      
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao baixar currículo');
-    }
-  };
   const validateJobForm = (): boolean => {
     const newErrors: JobFormErrors = {};
 
@@ -504,7 +483,7 @@ export default function Dashboard() {
                     >
                       <option value="">Todas as vagas</option>
                       {jobs.map(job => (
-                        <option key={job.id} value={job.id}>
+                        <option key={job.id} value={job.titulo}>
                           {job.titulo}
                         </option>
                       ))}
